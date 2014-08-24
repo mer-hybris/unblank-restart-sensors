@@ -110,67 +110,6 @@ static void log_emit(int lev, const char *fmt, ...)
 # define log_info(   FMT,ARG...) do{}while(0)
 # define log_debug(  FMT,ARG...) do{}while(0)
 #endif
-/* ========================================================================= *
- * LOOKUP
- * ========================================================================= */
-
-typedef struct lookup_t
-{
-    const char *key;
-    int         val;
-} lookup_t;
-
-static int lookup_val(const lookup_t *lut, const char *key, int def)
-{
-    if( !key )
-        return def;
-
-    for( ; lut->key; ++lut ) {
-        if( !strcmp(lut->key, key) )
-            return lut->val;
-    }
-
-    return def;
-}
-
-#if ENABLE_DEBUG_LOGGING
-static const char *lookup_key(const lookup_t *lut, int val, const char *def)
-{
-    for( ; lut->key; ++lut ) {
-        if( lut->val == val )
-            return lut->key;
-    }
-
-    return def;
-}
-#endif
-
-/* ========================================================================= *
- * DISPLAY STATE
- * ========================================================================= */
-
-typedef enum
-{
-    DISPLAY_STATE_UNKNOWN,
-    DISPLAY_STATE_OFF,
-    DISPLAY_STATE_DIM,
-    DISPLAY_STATE_ON,
-} display_state_t;
-
-static const lookup_t display_state_lut[] =
-{
-    { MCE_DISPLAY_OFF_STRING, DISPLAY_STATE_OFF },
-    { MCE_DISPLAY_DIM_STRING, DISPLAY_STATE_DIM },
-    { MCE_DISPLAY_ON_STRING,  DISPLAY_STATE_ON  },
-    { 0, -1 }
-};
-
-#if ENABLE_DEBUG_LOGGING
-static const char *display_state_repr(display_state_t state)
-{
-    return lookup_key(display_state_lut, state, "unknown");
-}
-#endif
 
 /* ========================================================================= *
  * MAINLOOP
