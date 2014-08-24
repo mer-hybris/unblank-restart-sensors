@@ -153,7 +153,7 @@ static const char mce_display_ind_rule[] =
 ;
 
 static DBusConnection *xdbus_con = 0;
-static void xdbus_async_call_va(const char *srv,
+static bool xdbus_async_call_va(const char *srv,
                                 const char *obj,
                                 const char *ifc,
                                 const char *fun,
@@ -196,9 +196,11 @@ EXIT:
 
     if( pc )  dbus_pending_call_unref(pc);
     if( req ) dbus_message_unref(req);
+
+    return res;
 }
 
-static void xdbus_async_call(const char *srv,
+static bool xdbus_async_call(const char *srv,
                              const char *obj,
                              const char *ifc,
                              const char *fun,
@@ -207,10 +209,22 @@ static void xdbus_async_call(const char *srv,
                              DBusFreeFunction free_cb,
                              int type, ...)
 {
+    bool res;
     va_list va;
     va_start(va, type);
-    xdbus_async_call_va(srv, obj, ifc, fun, cb, aptr, free_cb, type, va);
+    res = xdbus_async_call_va(srv, obj, ifc, fun, cb, aptr, free_cb, type, va);
     va_end(va);
+    return res;
+}
+
+static void xsystemd_restart_unit_cb(DBusPendingCall *pc, void *aptr)
+{
+}
+
+static bool sensors_restart_in_progress = false;
+static void xsystemd_restart_unit_free_cb(void *userdata)
+{
+    sensors_restart_in_progress = false;
 }
 
 static void xdbus_handle_display_state_signal(DBusMessage *msg)
@@ -229,14 +243,25 @@ static void xdbus_handle_display_state_signal(DBusMessage *msg)
         goto EXIT;
     }
 
-    if (!strcmp(name, "on"))
-        xdbus_async_call("org.freedesktop.systemd1",
+    if (!strcmp(name, "on")) {
+        bool res;
+
+        if (sensors_restart_in_progress)
+            goto EXIT;
+
+        res = xdbus_async_call("org.freedesktop.systemd1",
                          "/org/freedesktop/systemd1",
                          "org.freedesktop.systemd1.Manager",
                          "RestartUnit",
-                         0, 0, 0, DBUS_TYPE_STRING, &unit,
+                         xsystemd_restart_unit_cb, 0,
+                         xsystemd_restart_unit_free_cb,
+                         DBUS_TYPE_STRING, &unit,
                          DBUS_TYPE_STRING, &mode,
                          DBUS_TYPE_INVALID);
+
+        if (res)
+            sensors_restart_in_progress = true;
+    }
 
 EXIT:
     dbus_error_free(&err);
