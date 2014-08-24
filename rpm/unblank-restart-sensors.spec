@@ -1,11 +1,18 @@
 Name:       unblank-restart-sensors
-Summary:    App that restarts sensord service after display wakes up
+Summary:    Hacky service that restarts sensord after display wakes up
 Version:    0
 Release:    1
 Group:      System/Applications
 License:    TBD
 URL:        https://git.jollamobile.com/sffe/unblank-restart-sensors
 Source0:    %{name}-%{version}.tar.bz2
+Source1:    unblank-restart-sensors.service
+Requires:   systemd
+Requires(preun): systemd
+Requires(post): /sbin/ldconfig
+Requires(post): systemd
+Requires(postun): /sbin/ldconfig
+Requires(postun): systemd
 BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(glib-2.0)
 BuildRequires:  pkgconfig(dbus-1)
@@ -36,7 +43,28 @@ make %{?jobs:-j%jobs}
 rm -rf %{buildroot}
 %qmake5_install
 
+install -D -m644 %{SOURCE1} $RPM_BUILD_ROOT/%{_lib}/systemd/system/unblank-restart-sensors.service
+
+mkdir -p %{buildroot}/%{_lib}/systemd/system/basic.target.wants
+ln -s ../unblank-restart-sensors.service %{buildroot}/%{_lib}/systemd/system/basic.target.wants/unblank-restart-sensors.service
+
+%preun
+if [ "$1" -eq 0 ]; then
+systemctl stop unblank-restart-sensors.service || :
+fi
+
+%post
+/sbin/ldconfig
+systemctl daemon-reload || :
+systemctl reload-or-try-restart unblank-restart-sensors.service || :
+
+%postun
+/sbin/ldconfig
+systemctl daemon-reload || :
+
 %files
 %defattr(-,root,root,-)
 %{_bindir}/unblank-restart-sensors
+/%{_lib}/systemd/system/unblank-restart-sensors.service
+/%{_lib}/systemd/system/basic.target.wants/unblank-restart-sensors.service
 

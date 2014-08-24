@@ -1,0 +1,12 @@
+[Unit]
+Description=Restart sensord when display wakes up, to hack sensors back to work
+Requires=dbus.socket
+After=mce.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/unblank-restart-sensors
+
+[Install]
+WantedBy=multi-user.target
+
