@@ -3,7 +3,7 @@ Summary:    Hacky service that restarts sensord after display wakes up
 Version:    0
 Release:    1
 Group:      System/Applications
-License:    TBD
+License:    BSD-3
 URL:        https://git.jollamobile.com/sffe/unblank-restart-sensors
 Source0:    %{name}-%{version}.tar.bz2
 Source1:    unblank-restart-sensors.service
