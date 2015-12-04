@@ -256,7 +256,7 @@ static void xsystemd_restart_unit_free_cb(void *userdata)
 static void xdbus_handle_display_state_signal(DBusMessage *msg)
 {
     const char *name = 0;
-    const char *unit = "sensord.service";
+    const char *unit = "sensorfwd.service";
     const char *mode = "replace";
     
     DBusError   err  = DBUS_ERROR_INIT;
