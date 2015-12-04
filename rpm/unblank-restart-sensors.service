@@ -1,5 +1,5 @@
 [Unit]
-Description=Restart sensord when display wakes up, to hack sensors back to work
+Description=Restart sensorfwd when display wakes up, to hack sensors back to work
 Requires=dbus.socket
 After=mce.service
 

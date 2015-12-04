@@ -1,5 +1,5 @@
 Name:       unblank-restart-sensors
-Summary:    Hacky service that restarts sensord after display wakes up
+Summary:    Hacky service that restarts sensorfwd after display wakes up
 Version:    0
 Release:    1
 Group:      System/Applications
